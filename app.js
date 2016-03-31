@@ -76,7 +76,7 @@ function draw() {
             var center = hex_to_pixel(layout, hex);
             if (center.x < -hexSize.x || center.x > globalWidth + hexSize.x)
                 continue;
-            if (center.y < -hexSize.y || center.y > globalWidth + hexSize.y)
+            if (center.y < -hexSize.y || center.y > globalHeight + hexSize.y)
                 continue;
             ctx.beginPath();
             for (var i = 0; i < 6; i++) {
@@ -271,11 +271,11 @@ function withinBounds(pos) {
 }
 
 function withinXBounds(posX) {
-    if (posX < (canvas.width / ratio) - (worldWidth / 2) && posX > -(worldWidth / 2))
+    if (posX < globalWidth - (worldWidth / 2) && posX > -(worldWidth / 2))
         layout.origin.x = posX;
 }
 
 function withinYBounds(posY) {
-    if (posY < (canvas.height / ratio) - (worldHeight / 2) && posY > -(worldHeight / 2))
+    if (posY < globalHeight - (worldHeight / 2) && posY > -(worldHeight / 2))
         layout.origin.y = posY;
 }
