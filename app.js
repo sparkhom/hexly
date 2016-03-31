@@ -38,6 +38,8 @@ var oldPosY = 0;
 var mouseStartX = 0;
 var mouseStartY = 0;
 
+var layout = new Layout(layout_pointy, new Point(50,50), new Point(0,0));
+
 draw();
 
 function draw() {
@@ -46,16 +48,17 @@ function draw() {
         var r_offset = Math.floor(r/2);
         for (var q = -r_offset; q < initmap.width - r_offset; q++) {
             var type = initmap.get(q, r);
-            context.beginPath();
-            var center = Point(horizDistance * q + horizDistance * r / 2 + hexSize, vertDistance*r + hexSize);
+            var hex = new Hex(q, r, -q-r);
+            var center = hex_to_pixel(layout, hex);
             center.x -= posX;
             center.y -= posY;
-            for (var j = 0; j <= 6; j++) {
-                var pt = hex_corner(center, hexSize, j);
-                if (j == 0) {
-                    context.moveTo(pt.x, pt.y);
+            context.beginPath();
+            for (var i = 0; i < 6; i++) {
+                var pt = hex_corner_offset(layout, i);
+                if (i == 0) {
+                    context.moveTo(center.x + pt.x, center.y + pt.y);
                 } else {
-                    context.lineTo(pt.x, pt.y);
+                    context.lineTo(center.x + pt.x, center.y + pt.y);
                 }
             }
             context.closePath();
