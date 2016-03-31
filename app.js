@@ -22,8 +22,8 @@ var showCoordsText = false;
 
 var mapstore = [['W','W','W','W','W'],
                 ['W','W','W','W','W'],
-                ['W','0','0','L','W'],
-                ['W','0','0','L','W'],
+                ['W','W','L','L','W'],
+                ['W','W','L','L','W'],
                 ['W','W','L','L','L'],
                 ['W','W','L','L','L']];
 var initmap = new Map(mapstore);
@@ -31,10 +31,10 @@ var initmap = new Map(mapstore);
 var worldHeight = initmap.height * vertDistance;
 var worldWidth = initmap.width * horizDistance;
 console.log(worldHeight, worldWidth);
-var posX = 0;
-var posY = 0;
-var oldPosX = 0;
-var oldPosY = 0;
+var posX = -50;
+var posY = -50;
+var oldPosX = -50;
+var oldPosY = -50;
 var mouseStartX = 0;
 var mouseStartY = 0;
 
@@ -114,6 +114,11 @@ function mouseDown(e) {
 
 function mouseUp(e) {
     canvas.onmousemove = null;
+    if (oldPosX == posX && oldPosY == posY) {
+        var h = hex_round(pixel_to_hex(layout, new Point(e.clientX + posX, e.clientY + posY)));
+        initmap.set(h.q, h.r, '0');
+        draw();
+    }
 }
 
 function mouseMove(e) {
