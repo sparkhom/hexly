@@ -13,8 +13,8 @@ canvas.onmousedown = mouseDown;
 canvas.onmouseup = mouseUp;
 window.onresize = resize;
 
-var hexSize = 50;
-var hexHeight = hexSize * 2;
+var hexSize = new Point(50,50);
+var hexHeight = hexSize.y * 2;
 var hexWidth = Math.sqrt(3) / 2 * hexHeight;
 var vertDistance = hexHeight * 3/4;
 var horizDistance = hexWidth;
@@ -30,15 +30,10 @@ var initmap = new Map(mapstore);
 
 var worldHeight = initmap.height * vertDistance;
 var worldWidth = initmap.width * horizDistance;
-console.log(worldHeight, worldWidth);
-var posX = -50;
-var posY = -50;
-var oldPosX = -50;
-var oldPosY = -50;
-var mouseStartX = 0;
-var mouseStartY = 0;
+var oldPos = new Point(0,0);
+var mouseStart = new Point(0,0);
 
-var layout = new Layout(layout_pointy, new Point(50,50), new Point(0,0));
+var layout = new Layout(layout_pointy, hexSize, new Point(hexSize.x, hexSize.y));
 
 draw();
 
@@ -50,8 +45,6 @@ function draw() {
             var type = initmap.get(q, r);
             var hex = new Hex(q, r, -q-r);
             var center = hex_to_pixel(layout, hex);
-            center.x -= posX;
-            center.y -= posY;
             context.beginPath();
             for (var i = 0; i < 6; i++) {
                 var pt = hex_corner_offset(layout, i);
@@ -106,43 +99,58 @@ function showMouseOut() {
 
 function mouseDown(e) {
     canvas.onmousemove = mouseMove;
-    mouseStartX = e.clientX;
-    mouseStartY = e.clientY;
-    oldPosX = posX;
-    oldPosY = posY;
+    mouseStart.x = e.clientX;
+    mouseStart.y = e.clientY;
+    oldPos.x = layout.origin.x;
+    oldPos.y = layout.origin.y;
 }
 
 function mouseUp(e) {
     canvas.onmousemove = null;
-    if (oldPosX == posX && oldPosY == posY) {
-        var h = hex_round(pixel_to_hex(layout, new Point(e.clientX + posX, e.clientY + posY)));
+    if (oldPos.x == layout.origin.x && oldPos.y == layout.origin.y) {
+        var h = hex_round(pixel_to_hex(layout, new Point(e.clientX, e.clientY)));
         initmap.set(h.q, h.r, '0');
         draw();
     }
 }
 
 function mouseMove(e) {
-    var newPosX = oldPosX + mouseStartX - e.clientX;
-    console.log(newPosX);
-    var newPosY = oldPosY + mouseStartY - e.clientY;
+    var newPosX = oldPos.x - (mouseStart.x - e.clientX);
+    var newPosY = oldPos.y - (mouseStart.y - e.clientY);
+    var newPos = new Point(newPosX, newPosY);
 
-    if (newPosX > -canvas.width + worldWidth / 2 && newPosX < (worldWidth / 2))
-        posX = newPosX;
-    if (newPosY > -canvas.height + worldHeight / 2 && newPosY < (worldHeight / 2))
-        posY = newPosY;
+    if (withinXBounds(newPos.x))
+        layout.origin.x = newPos.x;
+    if (withinYBounds(newPos.y))
+        layout.origin.y = newPos.y;
 
-    console.log(posX, posY);
     draw();
 }
 
 function resize() {
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
-    if (posX < -canvas.width + worldWidth / 2 || posX > worldWidth / 2)
-        posX = 0;
-        oldPosX = 0;
-    if (posY < - canvas.height + worldHeight / 2 || posY > worldHeight / 2)
-        posY = 0;
-        oldPosY = 0;
+
+    if (!withinXBounds(layout.origin.x))
+        layout.origin.x = hexSize.x;
+        oldPos.x = hexSize.x;
+    if (!withinYBounds(layout.origin.y))
+        layout.origin.y = hexSize.y;
+        oldPos.y = hexSize.y;
+
     draw();
+}
+
+function withinBounds(pos) {
+    return withinXBounds(pos.x) && withinYBounds(pos.y);
+}
+
+function withinXBounds(posX) {
+    if (posX < canvas.width - (worldWidth / 2) && posX > -(worldWidth / 2))
+        layout.origin.x = posX;
+}
+
+function withinYBounds(posY) {
+    if (posY < canvas.height - (worldHeight / 2) && posY > -(worldHeight / 2))
+        layout.origin.y = posY;
 }
