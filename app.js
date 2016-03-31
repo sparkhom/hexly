@@ -1,17 +1,10 @@
 "use strict";
 
 var canvas = document.getElementById("game");
-canvas.height = window.innerHeight;
-canvas.width = window.innerWidth;
-canvas.tabIndex = 0;
-canvas.focus();
-var context = canvas.getContext("2d");
-
-canvas.onmouseover = showMouseOver;
-canvas.onmouseout = showMouseOut;
-canvas.onmousedown = mouseDown;
-canvas.onmouseup = mouseUp;
-window.onresize = resize;
+var globalWidth = window.innerWidth;
+var globalHeight = window.innerHeight;
+var ratio = 1;
+var ctx = canvas.getContext("2d");
 
 var hexSize = new Point(50,50);
 var hexHeight = hexSize.y * 2;
@@ -35,52 +28,76 @@ var mouseStart = new Point(0,0);
 
 var layout = new Layout(layout_pointy, hexSize, new Point(hexSize.x, hexSize.y));
 
-draw();
+setup();
+
+function setup() {
+    if (ctx) {
+        init();
+        requestAnimationFrame(update);
+        canvas.onmouseover = showMouseOver;
+        canvas.onmouseout = showMouseOut;
+        canvas.onmousedown = mouseDown;
+        canvas.onmouseup = mouseUp;
+        window.onresize = resize;
+        resize();
+    }
+}
+
+function init() {
+    draw();
+}
+
+function update() {
+    requestAnimationFrame(update);
+    if (ratio != (window.devicePixelRatio || 1))
+        resize();
+    draw();
+}
 
 function draw() {
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (var r = 0; r < initmap.height; r++) {
         var r_offset = Math.floor(r/2);
         for (var q = -r_offset; q < initmap.width - r_offset; q++) {
             var type = initmap.get(q, r);
             var hex = new Hex(q, r, -q-r);
             var center = hex_to_pixel(layout, hex);
-            context.beginPath();
+            ctx.beginPath();
             for (var i = 0; i < 6; i++) {
                 var pt = hex_corner_offset(layout, i);
                 if (i == 0) {
-                    context.moveTo(center.x + pt.x, center.y + pt.y);
+                    ctx.moveTo(center.x + pt.x, center.y + pt.y);
                 } else {
-                    context.lineTo(center.x + pt.x, center.y + pt.y);
+                    ctx.lineTo(center.x + pt.x, center.y + pt.y);
                 }
             }
-            context.closePath();
+            ctx.closePath();
 
-            context.strokeStyle = '#ffffff';
-            context.lineWidth = 4;
-            context.stroke();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 4;
+            ctx.stroke();
 
             if (type == 'W')
-                context.fillStyle = '#8ED6FF';
+                ctx.fillStyle = '#8ED6FF';
             else if (type == '0')
-                context.fillStyle = '#000';
+                ctx.fillStyle = '#000';
             else
-                context.fillStyle = '#8EFFD6';
+                ctx.fillStyle = '#8EFFD6';
 
-            context.fill();
+            ctx.fill();
 
-            context.beginPath();
-            context.fillStyle = '#ff8E8E';
-            context.arc(center.x, center.y, 5, 0, 2*Math.PI);
-            context.closePath();
-            context.fill();
+            ctx.beginPath();
+            ctx.fillStyle = '#ff8E8E';
+            ctx.arc(center.x, center.y, 5, 0, 2*Math.PI);
+            ctx.closePath();
+            ctx.fill();
 
             if (showCoordsText) {
-                context.fillStyle = '#ffffff';
-                context.font = '1.1em Arial';
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '1.1em Arial';
                 var coordsText = q + "," + r;
-                var metrics = context.measureText(coordsText);
-                context.fillText(coordsText, center.x - (metrics.width/2), center.y);
+                var metrics = ctx.measureText(coordsText);
+                ctx.fillText(coordsText, center.x - (metrics.width/2), center.y);
             }
         }
     }
@@ -88,13 +105,11 @@ function draw() {
 
 function showMouseOver() {
     showCoordsText = true;
-    draw();
 }
 
 function showMouseOut() {
     showCoordsText = false;
     canvas.onmousemove = null;
-    draw();
 }
 
 function mouseDown(e) {
@@ -110,7 +125,6 @@ function mouseUp(e) {
     if (oldPos.x == layout.origin.x && oldPos.y == layout.origin.y) {
         var h = hex_round(pixel_to_hex(layout, new Point(e.clientX, e.clientY)));
         initmap.set(h.q, h.r, '0');
-        draw();
     }
 }
 
@@ -123,13 +137,17 @@ function mouseMove(e) {
         layout.origin.x = newPos.x;
     if (withinYBounds(newPos.y))
         layout.origin.y = newPos.y;
-
-    draw();
 }
 
 function resize() {
-    canvas.height = window.innerHeight;
-    canvas.width = window.innerWidth;
+    ratio = window.devicePixelRatio || 1;
+    globalHeight = window.innerHeight*ratio;
+    globalWidth = window.innerWidth*ratio;
+    canvas.width = globalWidth;
+    canvas.height = globalHeight;
+    canvas.style.width = Math.floor(globalWidth / ratio);
+    canvas.style.height = Math.floor(globalHeight / ratio);
+    ctx.scale(ratio, ratio);
 
     if (!withinXBounds(layout.origin.x))
         layout.origin.x = hexSize.x;
@@ -137,7 +155,6 @@ function resize() {
     if (!withinYBounds(layout.origin.y))
         layout.origin.y = hexSize.y;
         oldPos.y = hexSize.y;
-
     draw();
 }
 
@@ -146,11 +163,11 @@ function withinBounds(pos) {
 }
 
 function withinXBounds(posX) {
-    if (posX < canvas.width - (worldWidth / 2) && posX > -(worldWidth / 2))
+    if (posX < (canvas.width / ratio) - (worldWidth / 2) && posX > -(worldWidth / 2))
         layout.origin.x = posX;
 }
 
 function withinYBounds(posY) {
-    if (posY < canvas.height - (worldHeight / 2) && posY > -(worldHeight / 2))
+    if (posY < (canvas.height / ratio) - (worldHeight / 2) && posY > -(worldHeight / 2))
         layout.origin.y = posY;
 }
