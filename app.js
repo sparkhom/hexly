@@ -20,15 +20,16 @@ var vertDistance = hexHeight * 3/4;
 var horizDistance = hexWidth;
 var showCoordsText = false;
 
-var map = [[0,0,0,0,0,0,0],
-           [0,1,1,1,0,1,0],
-           [0,0,1,0,1,0,0],
-           [0,1,0,1,0,1,0],
-           [0,0,1,0,1,0,0],
-           [0,1,0,1,0,1,0]
-           ];
-var worldHeight = map.length * vertDistance;
-var worldWidth = map[0].length * horizDistance;
+var mapstore = [['W','W','W','W','W'],
+                ['W','W','W','W','W'],
+                ['W','0','0','L','W'],
+                ['W','0','0','L','W'],
+                ['W','W','L','L','L'],
+                ['W','W','L','L','L']];
+var initmap = new Map(mapstore);
+
+var worldHeight = initmap.height * vertDistance;
+var worldWidth = initmap.width * horizDistance;
 console.log(worldHeight, worldWidth);
 var posX = 0;
 var posY = 0;
@@ -41,15 +42,12 @@ draw();
 
 function draw() {
     context.clearRect(0, 0, canvas.width, canvas.height);
-    for (var k = 0; k < map.length; k++) {
-        var add = 0;
-        if (k % 2 == 1) {
-            add = Math.sqrt(3) * hexSize / 2;
-        }
-        for (var i = 0; i < map[k].length; i++) {
+    for (var r = 0; r < initmap.height; r++) {
+        var r_offset = Math.floor(r/2);
+        for (var q = -r_offset; q < initmap.width - r_offset; q++) {
+            var type = initmap.get(q, r);
             context.beginPath();
-            //var center = Point(Math.sqrt(3)*i*hexSize + add + hexSize, hexSize*k*2*3/4 + hexSize);
-            var center = Point(horizDistance * i + add + hexSize, vertDistance*k + hexSize);
+            var center = Point(horizDistance * q + horizDistance * r / 2 + hexSize, vertDistance*r + hexSize);
             center.x -= posX;
             center.y -= posY;
             for (var j = 0; j <= 6; j++) {
@@ -66,8 +64,10 @@ function draw() {
             context.lineWidth = 4;
             context.stroke();
 
-            if (map[k][i] == 0)
+            if (type == 'W')
                 context.fillStyle = '#8ED6FF';
+            else if (type == '0')
+                context.fillStyle = '#000';
             else
                 context.fillStyle = '#8EFFD6';
 
@@ -82,11 +82,7 @@ function draw() {
             if (showCoordsText) {
                 context.fillStyle = '#ffffff';
                 context.font = '1.1em Arial';
-                // x = q, z = r, y = -x-z
-                var q = i - (k - (k&1)) / 2;
-                var r = k;
                 var coordsText = q + "," + r;
-                //coordsText = i + "," + k;
                 var metrics = context.measureText(coordsText);
                 context.fillText(coordsText, center.x - (metrics.width/2), center.y);
             }
