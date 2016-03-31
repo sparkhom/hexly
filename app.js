@@ -4,6 +4,8 @@ var canvas = document.getElementById("game");
 var globalWidth = window.innerWidth;
 var globalHeight = window.innerHeight;
 var ratio = 1;
+var debug = true;
+var timeToDraw = 0;
 var ctx = canvas.getContext("2d");
 
 var hexSize = new Point(50,50);
@@ -55,6 +57,7 @@ function update() {
 }
 
 function draw() {
+    var startDraw = Date.now();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (var r = 0; r < initmap.height; r++) {
         var r_offset = Math.floor(r/2);
@@ -99,8 +102,27 @@ function draw() {
                 var metrics = ctx.measureText(coordsText);
                 ctx.fillText(coordsText, center.x - (metrics.width/2), center.y);
             }
+
+            if (debug) {
+                var statusBarString = '';
+                timeToDraw = (timeToDraw * 0.9999) + ((Date.now() - startDraw) * 0.0001);
+                var fpsCount = Math.floor(1000 / timeToDraw);
+                statusBarString += 'Current FPS: ' + fpsCount;
+                drawStatusBar('Hexly (dev)', statusBarString);
+            }
         }
     }
+}
+
+function drawStatusBar(leftText, rightText) {
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#eee';
+    ctx.fillRect(0, globalHeight - 20, globalWidth, globalHeight);
+    ctx.font = '0.5em Arial';
+    ctx.strokeText(leftText, 10, globalHeight - 7);
+    var metrics = ctx.measureText(rightText);
+    ctx.strokeText(rightText, globalWidth - metrics.width - 10, globalHeight - 7);
 }
 
 function showMouseOver() {
@@ -141,12 +163,12 @@ function mouseMove(e) {
 
 function resize() {
     ratio = window.devicePixelRatio || 1;
-    globalHeight = window.innerHeight*ratio;
-    globalWidth = window.innerWidth*ratio;
-    canvas.width = globalWidth;
-    canvas.height = globalHeight;
-    canvas.style.width = Math.floor(globalWidth / ratio);
-    canvas.style.height = Math.floor(globalHeight / ratio);
+    globalHeight = window.innerHeight;
+    globalWidth = window.innerWidth;
+    canvas.width = globalWidth*ratio;
+    canvas.height = globalHeight*ratio;
+    canvas.style.width = globalWidth;
+    canvas.style.height = globalHeight;
     ctx.scale(ratio, ratio);
 
     if (!withinXBounds(layout.origin.x))
