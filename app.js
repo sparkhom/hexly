@@ -118,9 +118,9 @@ function mouseMove(e) {
     console.log(newPosX);
     var newPosY = oldPosY + mouseStartY - e.clientY;
 
-    if (newPosX > -canvas.width / 2 && newPosX < (worldWidth / 2))
+    if (newPosX > -canvas.width + worldWidth / 2 && newPosX < (worldWidth / 2))
         posX = newPosX;
-    if (newPosY > -canvas.height / 2 && newPosY < (worldHeight / 2))
+    if (newPosY > -canvas.height + worldHeight / 2 && newPosY < (worldHeight / 2))
         posY = newPosY;
 
     console.log(posX, posY);
@@ -130,10 +130,10 @@ function mouseMove(e) {
 function resize() {
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
-    if (posX < - canvas.width / 2 || posX > worldWidth / 2)
+    if (posX < -canvas.width + worldWidth / 2 || posX > worldWidth / 2)
         posX = 0;
         oldPosX = 0;
-    if (posY < - canvas.height / 2 || posY > worldHeight / 2)
+    if (posY < - canvas.height + worldHeight / 2 || posY > worldHeight / 2)
         posY = 0;
         oldPosY = 0;
     draw();
