@@ -332,7 +332,7 @@ test_all()
 
 // Exports for node/browserify modules:
 
-exports = {};
+var exports = {};
 exports.Point = Point;
 
 exports.Hex = Hex;
