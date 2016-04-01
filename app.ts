@@ -1,29 +1,27 @@
-"use strict";
-
-var canvas = document.getElementById("game");
-var ctx = canvas.getContext("2d");
-var globalWidth = window.innerWidth;
-var globalHeight = window.innerHeight;
-var ratio = 1;
-var debug = true;
-var timeToDraw = 0;
+var canvas = <HTMLCanvasElement> document.getElementById("game");
+var ctx: CanvasRenderingContext2D = canvas.getContext("2d");
+var globalWidth: number = window.innerWidth;
+var globalHeight: number = window.innerHeight;
+var ratio: number = 1;
+var debug: boolean = true;
+var timeToDraw: number = 0;
 
 var keyCodes = {};
 
-var hexSize = new Point(30,30);
-var hexHeight = hexSize.y * 2;
-var hexWidth = Math.sqrt(3) / 2 * hexHeight;
-var vertDistance = hexHeight * 3/4;
-var horizDistance = hexWidth;
-var showCoordsText = false;
+var hexSize: Point = new Point(30,30);
+var hexHeight: number = hexSize.y * 2;
+var hexWidth: number = Math.sqrt(3) / 2 * hexHeight;
+var vertDistance: number = hexHeight * 3/4;
+var horizDistance: number = hexWidth;
+var showCoordsText: boolean = false;
 
-var currentCell = false;
-var selectedCell = false;
-var needsUpdate = false;
+var currentCell: MapCell = null;
+var selectedCell: MapCell = null;
+var needsUpdate: boolean = false;
 
-var mapstore = [];
+var mapstore: MapCell[][] = [];
 generateRandomMap();
-var initmap = new Map(mapstore);
+var initmap: Map = new Map(mapstore);
 
 var worldHeight = initmap.height * vertDistance;
 var worldWidth = initmap.width * horizDistance;
@@ -31,7 +29,7 @@ var oldPos = new Point(0,0);
 var mouseStart = new Point(0,0);
 var mouseDrag = false;
 
-var layout = new Layout(layout_pointy, hexSize, new Point(hexSize.x, hexSize.y));
+var layout = new Layout(Layout.pointy, hexSize, new Point(hexSize.x, hexSize.y));
 
 setup();
 
@@ -73,14 +71,14 @@ function draw() {
         for (var q = -r_offset; q < initmap.width - r_offset; q++) {
             var hex = initmap.get(q, r);
             var cell = hex;
-            var center = hex_to_pixel(layout, hex);
+            var center = Layout.hexToPixel(layout, hex);
             if (center.x < -hexSize.x || center.x > globalWidth + hexSize.x)
                 continue;
             if (center.y < -hexSize.y || center.y > globalHeight + hexSize.y)
                 continue;
             ctx.beginPath();
             for (var i = 0; i < 6; i++) {
-                var pt = hex_corner_offset(layout, i);
+                var pt = Layout.hexCornerOffset(layout, i);
                 if (i == 0) {
                     ctx.moveTo(center.x + pt.x, center.y + pt.y);
                 } else {
@@ -130,22 +128,22 @@ function generateRandomMap() {
     for (var i = 0; i < 15; i++) {
         mapstore[i] = [];
         for (var j = 0; j < 30; j++) {
-            var coord = new OffsetCoord(j, i);
-            var h = roffset_to_cube(ODD, coord);
-            var random = Math.floor((Math.random() * 10) + 1);
-            var cell = new MapCell(h.q, h.r, h.s, MapCell.Types.NONE);
+            var coord:OffsetCoord = new OffsetCoord(j, i);
+            var h:Hex = OffsetCoord.roffsetToCube(OffsetCoord.ODD, coord);
+            var random:number = Math.floor((Math.random() * 10) + 1);
+            var cell:MapCell = new MapCell(h.q, h.r, h.s, MapCellType.NONE);
             if (random > 6) {
                 mapstore[i][j] = cell;
                 continue;
             }
             if (random > 6)
-                cell.type = MapCell.Types.WATER;
+                cell.type = MapCellType.WATER;
             else
                 random = Math.floor((Math.random() * 10) + 1);
                 if (random > 1)
-                    cell.type = MapCell.Types.LAND;
+                    cell.type = MapCellType.LAND;
                 else
-                    cell.type = MapCell.Types.MAGIC;
+                    cell.type = MapCellType.MAGIC;
 
             mapstore[i][j] = cell;
         }
@@ -191,22 +189,22 @@ function mouseUp(e) {
     mouseDrag = false;
     if (oldPos.x == layout.origin.x && oldPos.y == layout.origin.y && currentCell) {
         if (selectedCell) {
-            for (var i = 0; i < hex_directions.length; i++) {
-                var neighbor = hex_neighbor(selectedCell, i);
+            for (var i = 0; i < Hex.directions.length; i++) {
+                var neighbor = Hex.neighbor(selectedCell, i);
                 var neighborcell = initmap.get(neighbor.q, neighbor.r);
-                if (neighborcell && neighborcell.type != MapCell.Types.NONE) {
+                if (neighborcell && neighborcell.type != MapCellType.NONE) {
                     neighborcell.moveEnabled = false;
                 }
             }
         }
         if (currentCell == selectedCell) {
-            selectedCell = false;
+            selectedCell = null;
         } else {
             selectedCell = currentCell;
-            for (var i = 0; i < hex_directions.length; i++) {
-                var neighbor = hex_neighbor(selectedCell, i);
+            for (var i = 0; i < Hex.directions.length; i++) {
+                var neighbor = Hex.neighbor(selectedCell, i);
                 var neighborcell = initmap.get(neighbor.q, neighbor.r);
-                if (neighborcell && neighborcell.type != MapCell.Types.NONE) {
+                if (neighborcell && neighborcell.type != MapCellType.NONE) {
                     neighborcell.moveEnabled = true;
                 }
             }
@@ -227,7 +225,7 @@ function mouseMove(e) {
             layout.origin.y = newPos.y;
     }
 
-    var h = hex_round(pixel_to_hex(layout, new Point(e.clientX, e.clientY)));
+    var h = Hex.round(Layout.pixelToHex(layout, new Point(e.clientX, e.clientY)));
     currentCell = initmap.get(h.q, h.r);
     needsUpdate = true;
 }
@@ -252,8 +250,8 @@ function resize() {
     globalWidth = window.innerWidth;
     canvas.width = globalWidth*ratio;
     canvas.height = globalHeight*ratio;
-    canvas.style.width = globalWidth;
-    canvas.style.height = globalHeight;
+    canvas.style.width = globalWidth.toString();
+    canvas.style.height = globalHeight.toString();
     ctx.scale(ratio, ratio);
 
     if (!withinXBounds(layout.origin.x))

@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "sourceMap": true,
+        "target": "es5"
+    },
+    "filesGlob": [
+        "./**/*.ts"
+    ]
+}
