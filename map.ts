@@ -19,9 +19,9 @@ class Map {
         var i: number = r;
         var j: number = Math.floor(q + r/2);
         if (i < 0 || j < 0)
-            return [];
+            return null;
         if (i >= this._height || j >= this._width)
-            return [];
+            return null;
         return [i, j];
     }
 
@@ -54,7 +54,7 @@ class MapCell extends Hex {
         return this._height;
     }
 
-    public toString() {
+    public toString(): string {
         return '[MapCell ' + this.getTypeText() + ', ' + this._height + ']';
     }
 
