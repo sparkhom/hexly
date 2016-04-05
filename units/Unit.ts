@@ -13,4 +13,9 @@ class Unit extends Entity {
         var center = Layout.hexToPixel(this.game.layout, this.parentCell.getHex());
         this.ctx.fillText(coordsText, center.x - (metrics.width/2), center.y);
     }
+    public move(to: MapCell) {
+        this.parentCell.unit = null;
+        this.parentCell = to;
+        to.unit = this;
+    }
 }

@@ -90,8 +90,14 @@ class Map extends Entity {
                     cell.type = MapCellType.MAGIC;
                 else
                     cell.type = MapCellType.LAND;
-                if (i == 0 && j == 0)
-                    cell.unit = new Player(ctx, game, cell);
+                if (i == 0 && j == 0) {
+                    cell.unit = game.myPlayer;
+                    game.myPlayer.parentCell = cell;
+                }
+                if (i == 14 && j == 14) {
+                    cell.unit = game.opponentPlayer;
+                    game.opponentPlayer.parentCell = cell;
+                }
                 mapstore[i][j] = cell;
             }
         }
@@ -119,6 +125,11 @@ class Map extends Entity {
     }
 
     public update() {
+        if (this.game.state === GameState.MOVE) {
+            this.moveAdjacent(this.game.currentTurn.parentCell, true);
+        } else if (this.game.state === GameState.ATTACK) {
+            this.attackAdjacent(this.game.currentTurn.parentCell, true);
+        }
         for (var r = 0; r < this.height; r++) {
             var r_offset = Math.floor(r/2);
             for (var q = -r_offset; q < this.width - r_offset; q++) {
@@ -138,6 +149,24 @@ class Map extends Entity {
         }
     }
 
+    public moveAdjacent(hex: Hex, move: boolean) {
+        for (var i = 0; i < Hex.directions.length; i++) {
+            var neighbor: Hex = Hex.neighbor(hex, i);
+            var neighborcell: MapCell = this.get(neighbor.q, neighbor.r);
+            if (neighborcell && neighborcell.type != MapCellType.NONE && !neighborcell.unit)
+                neighborcell.moveEnabled = move;
+        }
+    }
+
+    public attackAdjacent(hex: Hex, move: boolean) {
+        for (var i = 0; i < Hex.directions.length; i++) {
+            var neighbor: Hex = Hex.neighbor(hex, i);
+            var neighborcell: MapCell = this.get(neighbor.q, neighbor.r);
+            if (neighborcell && neighborcell.unit)
+                neighborcell.moveEnabled = move;
+        }
+    }
+
     public mouseDown(ev: MouseEvent) {
         this.mouseStart.x = ev.clientX;
         this.mouseStart.y = ev.clientY;
@@ -149,31 +178,19 @@ class Map extends Entity {
         if (this.oldPos.x == this.game.layout.origin.x && this.oldPos.y == this.game.layout.origin.y) {
             var hex: Hex = Hex.round(Layout.pixelToHex(this.game.layout, new Point(ev.clientX, ev.clientY)));
             var cell: MapCell = this.get(hex.q, hex.r);
-            if (this.game.state === GameState.START) {
-                this.selectedCell = cell;
-                for (var i = 0; i < Hex.directions.length; i++) {
-                    var neighbor = Hex.neighbor(hex, i);
-                    var neighborcell = this.get(neighbor.q, neighbor.r);
-                    if (neighborcell && neighborcell.type != MapCellType.NONE)
-                        neighborcell.moveEnabled = true;
-                }
+            if (this.game.state === GameState.START && cell.unit == this.game.currentTurn) {
+                this.moveAdjacent(hex, true);
                 this.game.state = GameState.MOVE;
             } else if (this.game.state === GameState.MOVE) {
                 if (cell.moveEnabled) {
-                    cell.unit = this.selectedCell.unit;
-                    cell.unit.parentCell = cell;
-                    this.selectedCell.unit = null;
-                    this.game.state = GameState.START;
-                } else {
-                    this.game.state = GameState.START;
+                    this.moveAdjacent(this.game.currentTurn.parentCell.getHex(), false);
+                    this.game.currentTurn.move(cell);
+                    this.game.nextTurn();
+                } 
+            } else if (this.game.state === GameState.ATTACK) {
+                if (cell.moveEnabled) {
+                    this.attackAdjacent(this.game.currentTurn.parentCell.getHex(), false);
                 }
-                for (var i = 0; i < Hex.directions.length; i++) {
-                    var neighbor = Hex.neighbor(this.selectedCell.getHex(), i);
-                    var neighborcell = this.get(neighbor.q, neighbor.r);
-                    if (neighborcell && neighborcell.type != MapCellType.NONE)
-                        neighborcell.moveEnabled = false;
-                }
-                this.selectedCell = null;
             }
             cell.cellClicked();
             // Didn't move

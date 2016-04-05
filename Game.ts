@@ -24,7 +24,11 @@ class Game {
     public currentCell: MapCell;
 
     public entities: Entity[] = [];
-    public state: GameState = GameState.START;
+    public state: GameState = GameState.MOVE;
+    public turnQueue: Unit[] = [];
+    public currentTurn: Unit = null;
+    public myPlayer: Player;
+    public opponentPlayer: Player;
 
     private debugBar: DebugBar;
 
@@ -32,10 +36,18 @@ class Game {
         this.ctx = canvas.getContext("2d");
         this.hexSize = new Point(30,30);
         this.layout = new Layout(Layout.pointy, this.hexSize, new Point(this.hexSize.x, this.hexSize.y));
+
+        this.myPlayer = new Player(this.ctx, this, null);
+        this.opponentPlayer = new Player(this.ctx, this, null);
+        this.turnQueue = [this.opponentPlayer];
+        this.currentTurn = this.myPlayer;
+
         this.map = new Map(this.ctx, this, Map.generateStandardMap(this.ctx, this), this.hexSize);
         this.entities.push(this.map);
         this.debugBar = new DebugBar(this.ctx, this);
         this.entities.push(this.debugBar);
+
+
         this.setup();
     }
 
@@ -44,11 +56,11 @@ class Game {
         this.init();
         requestAnimationFrame(() => (this.update()));
         var _self = this;
-        canvas.addEventListener('mouseover', (ev: MouseEvent) => (this.mouseOver(ev)));
-        canvas.addEventListener('mouseout', (ev: MouseEvent) => (this.mouseOut(ev)));
-        canvas.addEventListener('mousemove', (ev: MouseEvent) => (this.mouseMove(ev)));
-        canvas.addEventListener('mousedown', (ev: MouseEvent) => (this.mouseDown(ev)));
-        canvas.addEventListener('mouseup', (ev: MouseEvent) => (this.mouseUp(ev)));
+        this.canvas.addEventListener('mouseover', (ev: MouseEvent) => (this.mouseOver(ev)));
+        this.canvas.addEventListener('mouseout', (ev: MouseEvent) => (this.mouseOut(ev)));
+        this.canvas.addEventListener('mousemove', (ev: MouseEvent) => (this.mouseMove(ev)));
+        this.canvas.addEventListener('mousedown', (ev: MouseEvent) => (this.mouseDown(ev)));
+        this.canvas.addEventListener('mouseup', (ev: MouseEvent) => (this.mouseUp(ev)));
         window.onkeydown = (ev: KeyboardEvent) => (this.keyDown(ev));
         window.onkeyup = (ev: KeyboardEvent) => (this.keyUp(ev));
         window.onresize = () => (this.resize());
@@ -71,7 +83,7 @@ class Game {
     public draw() {
         if (!this.redrawNeeded)
             return;
-        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         for (var entity of this.entities)
             entity.draw();
     }
@@ -118,6 +130,12 @@ class Game {
         this.redrawNeeded = true;
         for (var entity of this.entities)
             entity.keyDown(ev);
+    }
+
+    public nextTurn() {
+        this.turnQueue.push(this.currentTurn);
+        this.currentTurn = this.turnQueue.shift();
+        this.state = GameState.MOVE;
     }
 
     public resize() {

@@ -48,7 +48,6 @@ class MapCell extends Entity {
     }
 
     public update() {
-
     }
 
     public draw() {
