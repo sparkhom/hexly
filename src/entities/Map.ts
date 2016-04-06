@@ -86,9 +86,9 @@ export class Map extends Entity {
 
     public static generateStandardMap(ctx: CanvasRenderingContext2D, game: Game) {
         var mapstore:MapCell[][] = [];
-        for (var i = 0; i < 15; i++) {
+        for (var i = 0; i < 4; i++) {
             mapstore[i] = [];
-            for (var j = 0; j < 15; j++) {
+            for (var j = 0; j < 4; j++) {
                 var coord:OffsetCoord = new OffsetCoord(j, i);
                 var h:Hex = OffsetCoord.roffsetToCube(OffsetCoord.ODD, coord);
                 var cell:MapCell = new MapCell(ctx, game, h.q, h.r, h.s, MapCellType.NONE);
@@ -100,7 +100,7 @@ export class Map extends Entity {
                     cell.unit = game.myPlayer;
                     game.myPlayer.parentCell = cell;
                 }
-                if (i == 14 && j == 14) {
+                if (i == 3 && j == 3) {
                     cell.unit = game.opponentPlayer;
                     game.opponentPlayer.parentCell = cell;
                 }
@@ -190,6 +190,10 @@ export class Map extends Entity {
                 this.moveAdjacent(hex, true);
                 this.game.state = GameState.MOVE;
             } else if (this.game.state === GameState.MOVE) {
+                if (cell == this.game.currentTurn.parentCell) {
+                    this.moveAdjacent(this.game.currentTurn.parentCell.getHex(), false);
+                    this.game.state = GameState.SELECT;
+                }
                 if (cell.moveEnabled) {
                     this.moveAdjacent(this.game.currentTurn.parentCell.getHex(), false);
                     this.game.currentTurn.move(cell);
@@ -198,11 +202,13 @@ export class Map extends Entity {
             } else if (this.game.state === GameState.ATTACK) {
                 if (cell.moveEnabled) {
                     this.attackAdjacent(this.game.currentTurn.parentCell.getHex(), false);
+                    this.game.currentTurn.attack(cell.unit);
+                    this.game.nextTurn(GameAction.ATTACK);
                 }
             } else if (this.game.state === GameState.SUMMON) {
                 if (cell.moveEnabled) {
                     this.moveAdjacent(this.game.currentTurn.parentCell.getHex(), false);
-                    cell.unit = new Creature(this.ctx, this.game, cell);
+                    cell.unit = new Creature(this.ctx, this.game, cell, this.game.currentTurn.allegiance);
                     this.game.turnQueue.push(cell.unit);
                     this.game.nextTurn(GameAction.SUMMON);
                 }

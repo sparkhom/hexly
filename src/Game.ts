@@ -38,6 +38,9 @@ export class Game {
     public currentTurn: Unit = null;
     public myPlayer: Player;
     public opponentPlayer: Player;
+    public previousPosition: MapCell;
+
+    public winCondition: boolean = false;
 
     private debugBar: DebugBar;
 
@@ -46,8 +49,10 @@ export class Game {
         this.hexSize = new Point(30,30);
         this.layout = new Layout(Layout.pointy, this.hexSize, new Point(this.hexSize.x, this.hexSize.y));
 
-        this.myPlayer = new Player(this.ctx, this, null);
-        this.opponentPlayer = new Player(this.ctx, this, null);
+        this.myPlayer = new Player(this.ctx, this, null, true);
+        this.myPlayer.allegiance = true;
+        this.opponentPlayer = new Player(this.ctx, this, null, false);
+        this.opponentPlayer.allegiance = false;
         this.turnQueue = [this.opponentPlayer];
         this.currentTurn = this.myPlayer;
 
@@ -78,6 +83,8 @@ export class Game {
     }
 
     public update() {
+        if (this.winCondition)
+            return;
         requestAnimationFrame(() => (this.update()));
         if (this.ratio != (window.devicePixelRatio || 1))
             this.resize();
@@ -143,10 +150,19 @@ export class Game {
     }
 
     public nextTurn(action: GameAction) {
-        console.log('next turn called');
+        if (this.myPlayer.hp <= 0) {
+            alert('Opponent wins!');
+            this.winCondition = true;
+        }
+        if (this.opponentPlayer.hp <= 0) {
+            alert('You win!');
+            this.winCondition = true;
+        }
         this.turnQueue.push(this.currentTurn);
         this.map.moveAdjacent(this.currentTurn.parentCell.getHex(), false);
         this.currentTurn = this.turnQueue.shift();
+        this.previousPosition = null;
+        console.log(this.currentTurn);
         this.state = GameState.MOVE;
     }
 
