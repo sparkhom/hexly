@@ -1,7 +1,17 @@
-class Unit extends Entity {
+import {Game} from '../game';
+import {Entity} from '../entities/entity';
+import {MapCell} from '../entities/mapcell';
+import {Layout} from '../components/hexlib';
+export class Unit extends Entity {
     public hp: number = 10;
     public symbol: string;
     public name: string;
+
+    public waitTime: number = 5;
+    public moveTime: number = 7;
+    public attackTime: number = 10;
+    public summonTime: number = 10;
+
     constructor(protected ctx: CanvasRenderingContext2D, protected game: Game, public parentCell: MapCell) {
         super(ctx, game);
     }

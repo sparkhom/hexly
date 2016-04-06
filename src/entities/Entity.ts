@@ -1,4 +1,5 @@
-abstract class Entity {
+import {Game} from '../game';
+export abstract class Entity {
     protected entities: Entity[];
     protected needsRedraw: boolean;
     constructor(protected ctx: CanvasRenderingContext2D, protected game: Game) {

@@ -1,0 +1,12 @@
+{
+  "name": "hexly",
+  "version": "1.0.0",
+  "dependencies": {
+    "plugin-typescript": "^4.0.5",
+    "systemjs": "^0.19.25",
+    "typescript-collections": "^1.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^1.8.9"
+  }
+}

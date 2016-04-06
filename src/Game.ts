@@ -1,4 +1,13 @@
-class Game {
+import {Entity} from './entities/entity';
+import {Layout,Point} from './components/hexlib';
+import {MapCell} from './entities/mapcell';
+import {Map} from './entities/map';
+import {Menu} from './entities/menu';
+import {DebugBar} from './entities/debugbar';
+import {Unit} from './units/unit';
+import {Player} from './units/player';
+import {GameState} from './states/state';
+export class Game {
     public debug: boolean = true;
     public showCoordsText: boolean = false;
 
@@ -44,6 +53,7 @@ class Game {
 
         this.map = new Map(this.ctx, this, Map.generateStandardMap(this.ctx, this), this.hexSize);
         this.entities.push(this.map);
+        this.entities.push(new Menu(this.ctx, this));
         this.debugBar = new DebugBar(this.ctx, this);
         this.entities.push(this.debugBar);
 
@@ -132,8 +142,10 @@ class Game {
             entity.keyDown(ev);
     }
 
-    public nextTurn() {
+    public nextTurn(action: GameAction) {
+        console.log('next turn called');
         this.turnQueue.push(this.currentTurn);
+        this.map.moveAdjacent(this.currentTurn.parentCell.getHex(), false);
         this.currentTurn = this.turnQueue.shift();
         this.state = GameState.MOVE;
     }
@@ -152,4 +164,11 @@ class Game {
 
         this.draw();
     }
+}
+
+export enum GameAction {
+    WAIT,
+    MOVE,
+    ATTACK,
+    SUMMON
 }

@@ -27,3 +27,6 @@ Temporary Items
 # compiled typescript files
 **/*.js
 **/*.js.map
+
+# node modules
+node_modules

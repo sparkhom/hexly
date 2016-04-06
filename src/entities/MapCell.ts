@@ -1,4 +1,8 @@
-class MapCell extends Entity {
+import {Game} from '../game';
+import {Entity} from './entity';
+import {Unit} from '../units/unit';
+import {Layout,Hex} from '../components/hexlib';
+export class MapCell extends Entity {
     private _height:number = 0;
     public moveEnabled: boolean;
     public unit: Unit;
@@ -95,7 +99,7 @@ class MapCell extends Entity {
     }
 }
 
-enum MapCellType {
+export enum MapCellType {
     WATER,
     LAND,
     WALL,

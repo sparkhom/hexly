@@ -1,4 +1,10 @@
-class Map extends Entity {
+import {Game, GameAction} from '../game';
+import {GameState} from '../states/state';
+import {Entity} from './entity';
+import {Creature} from '../units/creature';
+import {MapCell, MapCellType} from './mapcell';
+import {Layout,Hex,Point,OffsetCoord} from '../components/hexlib';
+export class Map extends Entity {
     private _height: number;
     private _width: number;
     private _worldWidth: number;
@@ -178,6 +184,8 @@ class Map extends Entity {
         if (this.oldPos.x == this.game.layout.origin.x && this.oldPos.y == this.game.layout.origin.y) {
             var hex: Hex = Hex.round(Layout.pixelToHex(this.game.layout, new Point(ev.clientX, ev.clientY)));
             var cell: MapCell = this.get(hex.q, hex.r);
+            if (!cell)
+                return;
             if (this.game.state === GameState.START && cell.unit == this.game.currentTurn) {
                 this.moveAdjacent(hex, true);
                 this.game.state = GameState.MOVE;
@@ -185,11 +193,18 @@ class Map extends Entity {
                 if (cell.moveEnabled) {
                     this.moveAdjacent(this.game.currentTurn.parentCell.getHex(), false);
                     this.game.currentTurn.move(cell);
-                    this.game.nextTurn();
+                    this.game.state = GameState.SELECT;
                 } 
             } else if (this.game.state === GameState.ATTACK) {
                 if (cell.moveEnabled) {
                     this.attackAdjacent(this.game.currentTurn.parentCell.getHex(), false);
+                }
+            } else if (this.game.state === GameState.SUMMON) {
+                if (cell.moveEnabled) {
+                    this.moveAdjacent(this.game.currentTurn.parentCell.getHex(), false);
+                    cell.unit = new Creature(this.ctx, this.game, cell);
+                    this.game.turnQueue.push(cell.unit);
+                    this.game.nextTurn(GameAction.SUMMON);
                 }
             }
             cell.cellClicked();

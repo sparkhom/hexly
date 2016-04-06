@@ -6,6 +6,6 @@
         "moduleResolution": "node"
     },
     "filesGlob": [
-        "./**/*.ts"
+        "./src/**/*.ts"
     ]
 }

@@ -1,4 +1,6 @@
-class DebugBar extends Entity {
+import {Game} from '../game';
+import {Entity} from './entity';
+export class DebugBar extends Entity {
     private rightText: string;
     private leftText: string;
     private hidden: boolean;

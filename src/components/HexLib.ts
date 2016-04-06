@@ -6,12 +6,12 @@
 
 
 
-class Point
+export class Point
 {
     constructor (public x:number, public y:number) {}
 }
 
-class Hex
+export class Hex
 {
     constructor (public q:number, public r:number, public s:number) {}
 
@@ -110,7 +110,7 @@ class Hex
 
 }
 
-class OffsetCoord
+export class OffsetCoord
 {
     constructor (public col:number, public row:number) {}
     public static EVEN:number = 1;
@@ -151,12 +151,12 @@ class OffsetCoord
 
 }
 
-class Orientation
+export class Orientation
 {
     constructor (public f0:number, public f1:number, public f2:number, public f3:number, public b0:number, public b1:number, public b2:number, public b3:number, public start_angle:number) {}
 }
 
-class Layout
+export class Layout
 {
     constructor (public orientation:Orientation, public size:Point, public origin:Point) {}
     public static pointy:Orientation = new Orientation(Math.sqrt(3.0), Math.sqrt(3.0) / 2.0, 0.0, 3.0 / 2.0, Math.sqrt(3.0) / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0, 0.5);
