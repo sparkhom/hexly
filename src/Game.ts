@@ -69,7 +69,7 @@ export class Game {
     public setup() {
         this.redrawNeeded = true;
         this.init();
-        requestAnimationFrame(() => (this.update()));
+        //requestAnimationFrame(() => (this.update()));
         var _self = this;
         this.canvas.addEventListener('mouseover', (ev: MouseEvent) => (this.mouseOver(ev)));
         this.canvas.addEventListener('mouseout', (ev: MouseEvent) => (this.mouseOut(ev)));
@@ -85,7 +85,6 @@ export class Game {
     public update() {
         if (this.winCondition)
             return;
-        requestAnimationFrame(() => (this.update()));
         if (this.ratio != (window.devicePixelRatio || 1))
             this.resize();
         for (var entity of this.entities)
@@ -98,8 +97,6 @@ export class Game {
     }
 
     public draw() {
-        if (!this.redrawNeeded)
-            return;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         for (var entity of this.entities)
             entity.draw();
@@ -111,42 +108,49 @@ export class Game {
         this.redrawNeeded = true;
         for (var entity of this.entities)
             entity.mouseOver(ev);
+        this.update();
     }
 
     public mouseOut(ev: MouseEvent) {
         this.redrawNeeded = true;
         for (var entity of this.entities)
             entity.mouseOut(ev);
+        this.update();
     }
 
     public mouseDown(ev: MouseEvent) {
         this.redrawNeeded = true;
         for (var entity of this.entities)
             entity.mouseDown(ev);
+        this.update();
     }
 
     public mouseUp(ev: MouseEvent) {
         this.redrawNeeded = true;
         for (var entity of this.entities)
             entity.mouseUp(ev);
+        this.update();
     }
 
     public mouseMove(ev: MouseEvent) {
         this.redrawNeeded = true;
         for (var entity of this.entities)
             entity.mouseMove(ev);
+        this.update();
     }
 
     public keyUp(ev: KeyboardEvent) {
         this.redrawNeeded = true;
         for (var entity of this.entities)
             entity.keyUp(ev);
+        this.update();
     }
 
     public keyDown(ev: KeyboardEvent) {
         this.redrawNeeded = true;
         for (var entity of this.entities)
             entity.keyDown(ev);
+        this.update();
     }
 
     public nextTurn(action: GameAction) {
@@ -164,6 +168,7 @@ export class Game {
         this.previousPosition = null;
         console.log(this.currentTurn);
         this.state = GameState.MOVE;
+        this.draw();
     }
 
     public resize() {
