@@ -21,7 +21,7 @@ export class Button extends Entity {
         var metrics = this.ctx.measureText(this.text);
         this.ctx.font = '1.0em Arial';
         this.ctx.fillStyle = '#000';
-        this.ctx.fillText(this.text, this.x + ((this.width - metrics.width) / 2), this.y + this.height - 5);
+        this.ctx.fillText(this.text, this.x + (this.width / 2) - metrics.width / 2, this.y + this.height / 2);
     }
 
     public mouseMove(ev) {

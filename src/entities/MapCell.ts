@@ -1,7 +1,7 @@
 import {Game} from '../game';
 import {Entity} from './entity';
 import {Unit} from '../units/unit';
-import {Layout,Hex} from '../components/hexlib';
+import {Layout,Hex,Point} from '../components/hexlib';
 export class MapCell extends Entity {
     private _height:number = 0;
     public moveEnabled: boolean;
@@ -57,13 +57,27 @@ export class MapCell extends Entity {
     public draw() {
         var hex = this.getHex();
         var center = Layout.hexToPixel(this.game.layout, hex);
+
+        // Don't draw hexes that aren't being seen
         if (center.x < -this.game.hexSize.x || center.x > this.game.globalWidth + this.game.hexSize.x)
             return;
         if (center.y < -this.game.hexSize.y || center.y > this.game.globalHeight + this.game.hexSize.y)
             return;
+
+        this.drawTile(this.game.layout, center, this.getColor(), '#ffffff');
+
+        if (this.moveEnabled) {
+            this.drawMovementCircle(center);
+        }
+
+        if (this.unit)
+            this.unit.draw();
+    }
+
+    public drawTile(layout: Layout, center: Point, fillColor: string, strokeColor: string) {
         this.ctx.beginPath();
         for (var i = 0; i < 6; i++) {
-            var pt = Layout.hexCornerOffset(this.game.layout, i);
+            var pt = Layout.hexCornerOffset(layout, i);
             if (i == 0) {
                 this.ctx.moveTo(center.x + pt.x, center.y + pt.y);
             } else {
@@ -72,21 +86,17 @@ export class MapCell extends Entity {
         }
         this.ctx.closePath();
 
-        this.ctx.strokeStyle = '#ffffff';
-        this.ctx.lineWidth = 4;
-        this.ctx.stroke();
+        if (strokeColor) {
+            this.ctx.strokeStyle = strokeColor;
+            this.ctx.lineWidth = 4;
+            this.ctx.stroke();
+        }
 
-        this.ctx.fillStyle = this.getColor();
+        this.ctx.fillStyle = fillColor;
         this.ctx.fill();
-
-        if (this.moveEnabled)
-            this.drawMovementCircle(center);
-
-        if (this.unit)
-            this.unit.draw();
     }
 
-    public drawMovementCircle(center) {
+    public drawMovementCircle(center: Point) {
         this.ctx.beginPath();
         this.ctx.fillStyle = '#ff8E8E';
         this.ctx.arc(center.x, center.y, 5, 0, 2*Math.PI);

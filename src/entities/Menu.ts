@@ -1,7 +1,9 @@
 import {Game, GameAction} from '../game';
 import {GameState} from '../states/state';
 import {Entity} from './entity';
+import {MapCell} from './mapcell';
 import {Button} from './button';
+import {Layout,Point} from '../components/hexlib';
 export class Menu extends Entity {
     public buttons: Button[] = [];
     public backButton: Button;
@@ -10,10 +12,10 @@ export class Menu extends Entity {
     public summonButton: Button;
     constructor(ctx: CanvasRenderingContext2D, game: Game) {
         super(ctx, game);
-        this.waitButton = new Button(ctx, game, "wait", this.game.globalWidth - 180, 20, 160, 20, this.wait);
-        this.attackButton = new Button(ctx, game, "attack", this.game.globalWidth - 180, 60, 160, 20, this.attack);
-        this.summonButton = new Button(ctx, game, "summon", this.game.globalWidth - 180, 100, 160, 20, this.summon);
-        this.backButton = new Button(ctx, game, "back", this.game.globalWidth - 180, 140, 160, 20, this.back);
+        this.waitButton = new Button(ctx, game, "wait", this.game.globalWidth - 180, this.game.globalHeight - 260, 160, 40, this.wait);
+        this.attackButton = new Button(ctx, game, "attack", this.game.globalWidth - 180, this.game.globalHeight - 200, 160, 40, this.attack);
+        this.summonButton = new Button(ctx, game, "summon", this.game.globalWidth - 180, this.game.globalHeight - 140, 160, 40, this.summon);
+        this.backButton = new Button(ctx, game, "back", this.game.globalWidth - 180, this.game.globalHeight - 80, 160, 40, this.back);
         this.buttons.push(this.waitButton);
         this.buttons.push(this.attackButton);
         this.buttons.push(this.summonButton);
@@ -47,6 +49,12 @@ export class Menu extends Entity {
         this.ctx.fillRect(this.game.globalWidth - 200, 0, 200, this.game.globalHeight);
         for (var b of this.buttons) {
             b.draw();
+        }
+
+        if (this.game.currentCell) {
+            var bigCell: MapCell = new MapCell(this.ctx, this.game, this.game.currentCell.q, this.game.currentCell.r, this.game.currentCell.s, this.game.currentCell.type);
+            var bigLayout: Layout = new Layout(this.game.layout.orientation, new Point(80,80), this.game.layout.origin);
+            bigCell.drawTile(bigLayout, new Point(this.game.globalWidth - 100, 100), bigCell.getColor(), '#ffffff')
         }
     }
 
